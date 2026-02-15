@@ -186,7 +186,7 @@
         // LISTES OFFICIELLES (Extraites des images)
         const candidatesFemmes = [
             "CATTANT Catherine", "CARO Marie", "DANET Nathalie", "DELION Evelyne",
-            "GIRARD Nathalie", "HAUET Sophie", "HOUDOU Dominique", "LE BODEC Karen",
+            "GIRARD Nathalie", "HAUET Sophie", "HOUDOU Dominique",
             "LE BODO Christine", "LE FEURMOU Marylise", "LUMINEAU Irène", "PAVOISNE Virginie",
             "PECCABIN Claudine", "PICHET Martine", "REBEYRE Stéphanie", "RIO Virginie"
         ];
@@ -194,23 +194,18 @@
         const candidatesHommes = [
             "ALIX Patrick", "BUSSON Philippe", "CADORET Lionel", "COMMUN Jérôme",
             "DANET Douglas", "GENETTE Théo", "GUILLAS André", "KERRAND Fabrice",
-            "LE BIHAN Cédrick", "LE BODEC Gwenn", "LE BODO Laurent", "LE SAYEC Michel",
-            "RENAY Noah", "STEPHANT Yannick", "VANDAELE Jacques-Henri"
+            "LE BIHAN Cédrick", "LE BODO Laurent", "LE FEURMOU Pierre", "LE SAYEC Michel",
+            "LUMINEAU Matthias", "RENAY Noah", "STEPHANT Yannick", "VANDAELE Jacques-Henri"
         ];
         const headOfList = "COMMUN Jérôme";
 
-        function shuffleArray(items) {
-            const array = [...items];
-            for (let i = array.length - 1; i > 0; i -= 1) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+        function sortByName(items) {
+            return [...items].sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
         }
 
-        const shuffledFemmes = shuffleArray(candidatesFemmes);
-        const shuffledHommesClassement = shuffleArray(candidatesHommes.filter((name) => name !== headOfList));
-        const shuffledHommesGMVA = shuffleArray(candidatesHommes);
+        const sortedFemmes = sortByName(candidatesFemmes);
+        const sortedHommesClassement = sortByName(candidatesHommes.filter((name) => name !== headOfList));
+        const sortedHommesGMVA = sortByName(candidatesHommes);
 
         // --- 2. NAVIGATION ---
         document.getElementById('startBtn').addEventListener('click', function() {
@@ -312,10 +307,10 @@
         }
 
         // Initialisation
-        createListItems('listFemmes', shuffledFemmes, 'text-pink-600', 'bg-pink-500');
-        createListItems('listHommes', shuffledHommesClassement, 'text-blue-600', 'bg-blue-500');
-        createCheckboxItems('gmvaFemmes', shuffledFemmes, 'F');
-        createCheckboxItems('gmvaHommes', shuffledHommesGMVA, 'H');
+        createListItems('listFemmes', sortedFemmes, 'text-pink-600', 'bg-pink-500');
+        createListItems('listHommes', sortedHommesClassement, 'text-blue-600', 'bg-blue-500');
+        createCheckboxItems('gmvaFemmes', sortedFemmes, 'F');
+        createCheckboxItems('gmvaHommes', sortedHommesGMVA, 'H');
 
         // --- 4. LOGIQUE DRAG & DROP ---
         function updateRanks(listId) {
