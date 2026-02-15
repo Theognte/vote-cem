@@ -110,6 +110,21 @@
         // Gestion Clavier
         document.getElementById('passwordInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') fetchResults(); });
 
+        async function parseJsonResponse(response) {
+            const rawText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (err) {
+                throw new Error('Réponse serveur invalide (JSON attendu).');
+            }
+
+            if (!response.ok) {
+                throw new Error(data.message || `Erreur serveur (${response.status}).`);
+            }
+            return data;
+        }
+
         // Navigation Onglets
         function switchTab(tabName) {
             document.getElementById('view-stats').classList.add('hidden');
@@ -137,22 +152,28 @@
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('loginArea').classList.add('hidden');
 
-            fetch(`${SCRIPT_URL}?password=${encodeURIComponent(pwd)}`)
-                .then(r => r.json())
+            const formData = new FormData();
+            formData.append('password', pwd);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+                .then(parseJsonResponse)
                 .then(data => {
                     document.getElementById('loading').classList.add('hidden');
                     if (data.result === 'error') {
                         document.getElementById('loginArea').classList.remove('hidden');
-                        document.getElementById('errorMsg').textContent = data.message;
+                        document.getElementById('errorMsg').textContent = data.message || 'Code incorrect.';
                         document.getElementById('errorMsg').classList.remove('hidden');
                     } else {
                         document.getElementById('mainContent').classList.remove('hidden');
                         renderStats(data);
-                        renderManagement(data.rawList);
+                        renderManagement(data.rawList || []);
                     }
                 })
                 .catch(err => {
-                    alert("Erreur réseau");
+                    alert(`Erreur réseau ou serveur : ${err.message}`);
                     location.reload();
                 });
         }
@@ -163,53 +184,95 @@
             
             const fillTable = (list, id) => {
                 const tbody = document.getElementById(id);
-                tbody.innerHTML = '';
+                tbody.replaceChildren();
                 list.forEach((item, idx) => {
-                    let badge = idx < 3 ? ['🥇','🥈','🥉'][idx] : `#${idx+1}`;
-                    let cls = idx < 3 ? 'font-bold text-slate-800' : 'text-slate-500';
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-3 w-12 text-center">${badge}</td>
-                            <td class="p-3 ${cls}">${item.name}</td>
-                            <td class="p-3 text-right text-slate-600">${item.score} pts</td>
-                        </tr>`;
+                    const badge = idx < 3 ? ['🥇','🥈','🥉'][idx] : `#${idx+1}`;
+                    const cls = idx < 3 ? 'font-bold text-slate-800' : 'text-slate-500';
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50';
+
+                    const tdBadge = document.createElement('td');
+                    tdBadge.className = 'p-3 w-12 text-center';
+                    tdBadge.textContent = badge;
+
+                    const tdName = document.createElement('td');
+                    tdName.className = `p-3 ${cls}`;
+                    tdName.textContent = item.name;
+
+                    const tdScore = document.createElement('td');
+                    tdScore.className = 'p-3 text-right text-slate-600';
+                    tdScore.textContent = `${item.score} pts`;
+
+                    tr.appendChild(tdBadge);
+                    tr.appendChild(tdName);
+                    tr.appendChild(tdScore);
+                    tbody.appendChild(tr);
                 });
             };
-            fillTable(data.femmes, 'tbodyFemmes');
-            fillTable(data.hommes, 'tbodyHommes');
+            fillTable(data.femmes || [], 'tbodyFemmes');
+            fillTable(data.hommes || [], 'tbodyHommes');
 
             const grid = document.getElementById('gridGMVA');
-            grid.innerHTML = '';
-            data.gmva.forEach((item, idx) => {
+            grid.replaceChildren();
+            (data.gmva || []).forEach((item, idx) => {
                 const isTop = idx < 6;
-                grid.innerHTML += `
-                    <div class="p-3 rounded border flex justify-between ${isTop ? 'bg-white border-emerald-400' : 'bg-slate-100 border-slate-200 opacity-60'}">
-                        <span class="font-bold text-slate-700">#${idx+1} ${item.name}</span>
-                        <span class="font-bold text-emerald-600">${item.score}</span>
-                    </div>`;
+                const card = document.createElement('div');
+                card.className = `p-3 rounded border flex justify-between ${isTop ? 'bg-white border-emerald-400' : 'bg-slate-100 border-slate-200 opacity-60'}`;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'font-bold text-slate-700';
+                nameSpan.textContent = `#${idx + 1} ${item.name}`;
+
+                const scoreSpan = document.createElement('span');
+                scoreSpan.className = 'font-bold text-emerald-600';
+                scoreSpan.textContent = `${item.score}`;
+
+                card.appendChild(nameSpan);
+                card.appendChild(scoreSpan);
+                grid.appendChild(card);
             });
         }
 
         // Affichage Gestion (Liste suppression)
         function renderManagement(list) {
             const tbody = document.getElementById('tbodyRaw');
-            tbody.innerHTML = '';
+            tbody.replaceChildren();
             
             // On inverse la liste pour voir les derniers votes en premier
             [...list].reverse().forEach(vote => {
                 const date = new Date(vote.date).toLocaleString('fr-FR');
-                tbody.innerHTML += `
-                    <tr class="hover:bg-red-50 transition-colors group">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 uppercase">${vote.nom}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 capitalize">${vote.prenom}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onclick="deleteVote(${vote.row}, '${vote.prenom} ${vote.nom}')" class="text-red-400 hover:text-red-700 font-bold border border-red-200 hover:border-red-600 rounded px-3 py-1 bg-white transition-all">
-                                🗑️ Supprimer
-                            </button>
-                        </td>
-                    </tr>
-                `;
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-red-50 transition-colors group';
+
+                const tdDate = document.createElement('td');
+                tdDate.className = 'px-6 py-4 whitespace-nowrap text-sm text-slate-500';
+                tdDate.textContent = date;
+
+                const tdNom = document.createElement('td');
+                tdNom.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 uppercase';
+                tdNom.textContent = vote.nom;
+
+                const tdPrenom = document.createElement('td');
+                tdPrenom.className = 'px-6 py-4 whitespace-nowrap text-sm text-slate-700 capitalize';
+                tdPrenom.textContent = vote.prenom;
+
+                const tdAction = document.createElement('td');
+                tdAction.className = 'px-6 py-4 whitespace-nowrap text-right text-sm font-medium';
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'text-red-400 hover:text-red-700 font-bold border border-red-200 hover:border-red-600 rounded px-3 py-1 bg-white transition-all';
+                deleteButton.textContent = '🗑️ Supprimer';
+                deleteButton.addEventListener('click', () => {
+                    deleteVote(vote.row, `${vote.prenom} ${vote.nom}`);
+                });
+
+                tdAction.appendChild(deleteButton);
+                tr.appendChild(tdDate);
+                tr.appendChild(tdNom);
+                tr.appendChild(tdPrenom);
+                tr.appendChild(tdAction);
+                tbody.appendChild(tr);
             });
         }
 
@@ -226,7 +289,7 @@
             formData.append('row', rowId);
 
             fetch(SCRIPT_URL, { method: 'POST', body: formData })
-            .then(r => r.json())
+            .then(parseJsonResponse)
             .then(data => {
                 document.body.style.cursor = 'default';
                 if(data.result === 'success') {

@@ -198,6 +198,18 @@
             "RENAY Noah", "STEPHANT Yannick", "VANDAELE Jacques-Henri"
         ];
 
+        function shuffleArray(items) {
+            const array = [...items];
+            for (let i = array.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        const shuffledFemmes = shuffleArray(candidatesFemmes);
+        const shuffledHommes = shuffleArray(candidatesHommes);
+
         // --- 2. NAVIGATION ---
         document.getElementById('startBtn').addEventListener('click', function() {
             document.getElementById('landingPage').classList.add('hidden');
@@ -214,13 +226,35 @@
                 const li = document.createElement('li');
                 li.className = `draggable-item bg-white border border-slate-200 p-3 rounded-lg flex items-center justify-between shadow-sm select-none group`;
                 li.setAttribute('data-name', name);
-                li.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <span class="rank-badge font-mono text-sm font-bold ${badgeColor} text-white px-2 py-1 rounded shadow-sm text-center w-8 group-hover:scale-110"></span>
-                        <span class="font-semibold text-slate-700">${name}</span>
-                    </div>
-                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                `;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'flex items-center gap-3';
+
+                const rankBadge = document.createElement('span');
+                rankBadge.className = `rank-badge font-mono text-sm font-bold ${badgeColor} text-white px-2 py-1 rounded shadow-sm text-center w-8 group-hover:scale-110`;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'font-semibold text-slate-700';
+                nameSpan.textContent = name;
+
+                wrapper.appendChild(rankBadge);
+                wrapper.appendChild(nameSpan);
+
+                const dragIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                dragIcon.setAttribute('class', 'w-6 h-6 text-slate-300');
+                dragIcon.setAttribute('fill', 'none');
+                dragIcon.setAttribute('stroke', 'currentColor');
+                dragIcon.setAttribute('viewBox', '0 0 24 24');
+
+                const dragPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                dragPath.setAttribute('stroke-linecap', 'round');
+                dragPath.setAttribute('stroke-linejoin', 'round');
+                dragPath.setAttribute('stroke-width', '2');
+                dragPath.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                dragIcon.appendChild(dragPath);
+
+                li.appendChild(wrapper);
+                li.appendChild(dragIcon);
                 list.appendChild(li);
             });
         }
@@ -231,13 +265,38 @@
             candidates.forEach(name => {
                 const div = document.createElement('div');
                 div.className = "flex items-center p-2 hover:bg-white/50 cursor-pointer transition-colors";
-                div.innerHTML = `
-                    <div class="relative flex items-center">
-                        <input type="checkbox" name="gmva_${type}" value="${name}" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-slate-300 checked:bg-indigo-600 checked:border-transparent focus:ring-2 focus:ring-indigo-500">
-                        <svg class="absolute w-3.5 h-3.5 pointer-events-none hidden peer-checked:block text-white left-0.5 top-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    </div>
-                    <label class="text-sm font-medium text-slate-700 cursor-pointer ml-3 select-none flex-1">${name}</label>
-                `;
+
+                const checkboxWrapper = document.createElement('div');
+                checkboxWrapper.className = 'relative flex items-center';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = `gmva_${type}`;
+                checkbox.value = name;
+                checkbox.className = 'peer h-5 w-5 cursor-pointer appearance-none rounded border border-slate-300 checked:bg-indigo-600 checked:border-transparent focus:ring-2 focus:ring-indigo-500';
+
+                const checkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                checkIcon.setAttribute('class', 'absolute w-3.5 h-3.5 pointer-events-none hidden peer-checked:block text-white left-0.5 top-1');
+                checkIcon.setAttribute('viewBox', '0 0 24 24');
+                checkIcon.setAttribute('fill', 'none');
+                checkIcon.setAttribute('stroke', 'currentColor');
+                checkIcon.setAttribute('stroke-width', '4');
+                checkIcon.setAttribute('stroke-linecap', 'round');
+                checkIcon.setAttribute('stroke-linejoin', 'round');
+
+                const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                polyline.setAttribute('points', '20 6 9 17 4 12');
+                checkIcon.appendChild(polyline);
+
+                const label = document.createElement('label');
+                label.className = 'text-sm font-medium text-slate-700 cursor-pointer ml-3 select-none flex-1';
+                label.textContent = name;
+
+                checkboxWrapper.appendChild(checkbox);
+                checkboxWrapper.appendChild(checkIcon);
+                div.appendChild(checkboxWrapper);
+                div.appendChild(label);
+
                 // Click sur toute la ligne active la checkbox
                 div.addEventListener('click', (e) => {
                     if (e.target.tagName !== 'INPUT') {
@@ -251,10 +310,10 @@
         }
 
         // Initialisation
-        createListItems('listFemmes', candidatesFemmes, 'text-pink-600', 'bg-pink-500');
-        createListItems('listHommes', candidatesHommes, 'text-blue-600', 'bg-blue-500');
-        createCheckboxItems('gmvaFemmes', candidatesFemmes, 'F');
-        createCheckboxItems('gmvaHommes', candidatesHommes, 'H');
+        createListItems('listFemmes', shuffledFemmes, 'text-pink-600', 'bg-pink-500');
+        createListItems('listHommes', shuffledHommes, 'text-blue-600', 'bg-blue-500');
+        createCheckboxItems('gmvaFemmes', shuffledFemmes, 'F');
+        createCheckboxItems('gmvaHommes', shuffledHommes, 'H');
 
         // --- 4. LOGIQUE DRAG & DROP ---
         function updateRanks(listId) {
@@ -316,9 +375,37 @@
         handleGMVALimit('input[name="gmva_H"]', 'countHommesGMVA');
 
         // --- 6. SOUMISSION DU FORMULAIRE ---
+        function hasServerSuccess(data) {
+            if (!data || typeof data !== 'object') return false;
+            if (data.result === 'success') return true;
+            if (data.status === 'success') return true;
+            if (data.success === true) return true;
+            return false;
+        }
+
+        function renderSuccessScreen(firstName) {
+            document.body.innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-screen bg-green-50 text-center p-6 fade-in">
+                    <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-green-100">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="text-4xl">✅</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-green-800 mb-2">Vote Enregistré !</h2>
+                        <p id="successMessage" class="text-slate-600 mb-6"></p>
+                        <div class="text-xs text-slate-400 pt-4 border-t border-slate-100">
+                            Rendez-vous le 18 février pour les résultats.
+                        </div>
+                    </div>
+                </div>
+            `;
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = `Merci ${firstName}. Votre participation a bien été transmise de façon sécurisée.`;
+        }
+
         document.getElementById('voteForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
+            const defaultBtnHtml = btn.innerHTML;
             
             // Validation GMVA stricte
             const gmvaF = document.querySelectorAll('input[name="gmva_F"]:checked');
@@ -328,6 +415,10 @@
                 alert("⛔ ERREUR : Vous devez sélectionner exactement :\n- 3 Femmes pour GMVA\n- 3 Hommes pour GMVA");
                 // Scroll vers la section GMVA
                 document.getElementById('gmvaFemmes').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            if (!confirm('Confirmez-vous votre vote ?')) {
                 return;
             }
 
@@ -355,30 +446,31 @@
                 method: 'POST',
                 body: urlParams
             })
-            .then(response => {
-                // Affichage page Succès
-                document.body.innerHTML = `
-                    <div class="flex flex-col items-center justify-center min-h-screen bg-green-50 text-center p-6 fade-in">
-                        <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-green-100">
-                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <span class="text-4xl">✅</span>
-                            </div>
-                            <h2 class="text-2xl font-bold text-green-800 mb-2">Vote Enregistré !</h2>
-                            <p class="text-slate-600 mb-6">Merci <strong>${formData.get('prenom')}</strong>.<br>Votre participation a bien été transmise de façon sécurisée.</p>
-                            <div class="text-xs text-slate-400 pt-4 border-t border-slate-100">
-                                Rendez-vous le 18 février pour les résultats.
-                            </div>
-                        </div>
-                    </div>
-                `;
+            .then(async response => {
+                const rawText = await response.text();
+                let payload;
+                try {
+                    payload = JSON.parse(rawText);
+                } catch (err) {
+                    throw new Error('Réponse serveur invalide (JSON attendu).');
+                }
+
+                if (!response.ok) {
+                    throw new Error(payload.message || `Erreur serveur (${response.status}).`);
+                }
+                if (!hasServerSuccess(payload)) {
+                    throw new Error(payload.message || 'Le serveur n\'a pas confirmé l\'enregistrement du vote.');
+                }
+
+                renderSuccessScreen(formData.get('prenom'));
             })
             .catch(error => {
                 console.error(error);
-                alert("❌ Erreur de connexion. Vérifiez votre internet et réessayez.");
+                alert(`❌ Échec de l'envoi : ${error.message}`);
                 btn.disabled = false;
                 btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
                 btn.classList.remove('bg-slate-400', 'cursor-not-allowed');
-                btn.innerHTML = "Valider mon vote";
+                btn.innerHTML = defaultBtnHtml;
             });
         });
     </script>
