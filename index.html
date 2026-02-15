@@ -197,6 +197,7 @@
             "LE BIHAN Cédrick", "LE BODEC Gwenn", "LE BODO Laurent", "LE SAYEC Michel",
             "RENAY Noah", "STEPHANT Yannick", "VANDAELE Jacques-Henri"
         ];
+        const headOfList = "COMMUN Jérôme";
 
         function shuffleArray(items) {
             const array = [...items];
@@ -208,7 +209,8 @@
         }
 
         const shuffledFemmes = shuffleArray(candidatesFemmes);
-        const shuffledHommes = shuffleArray(candidatesHommes);
+        const shuffledHommesClassement = shuffleArray(candidatesHommes.filter((name) => name !== headOfList));
+        const shuffledHommesGMVA = shuffleArray(candidatesHommes);
 
         // --- 2. NAVIGATION ---
         document.getElementById('startBtn').addEventListener('click', function() {
@@ -311,9 +313,9 @@
 
         // Initialisation
         createListItems('listFemmes', shuffledFemmes, 'text-pink-600', 'bg-pink-500');
-        createListItems('listHommes', shuffledHommes, 'text-blue-600', 'bg-blue-500');
+        createListItems('listHommes', shuffledHommesClassement, 'text-blue-600', 'bg-blue-500');
         createCheckboxItems('gmvaFemmes', shuffledFemmes, 'F');
-        createCheckboxItems('gmvaHommes', shuffledHommes, 'H');
+        createCheckboxItems('gmvaHommes', shuffledHommesGMVA, 'H');
 
         // --- 4. LOGIQUE DRAG & DROP ---
         function updateRanks(listId) {
