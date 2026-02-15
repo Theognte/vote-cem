@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Vote Interne - Collectif CEM Plescop</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        /* Styles pour le confort tactile */
+        .draggable-item { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+        .draggable-item:active { cursor: grabbing; background-color: #f3f4f6; transform: scale(1.02); }
+        .sortable-ghost { opacity: 0.4; background: #e0e7ff; border: 2px dashed #6366f1; }
+        .rank-badge { min-width: 2rem; transition: all 0.2s; }
+        
+        /* Animation d'apparition */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Masquer la scrollbar sur mobile pour l'esthétique */
+        body { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans pb-20">
+
+    <header class="bg-indigo-700 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🗳️</span>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">Vote Interne CEM</h1>
+                    <p class="text-indigo-200 text-xs">Plescop 2026</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-3xl mx-auto p-4">
+
+        <div id="landingPage" class="space-y-6 fade-in">
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border-t-4 border-indigo-500">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">Détermination de l’ordre des colistiers</h2>
+                <p class="text-slate-600 mb-4 leading-relaxed">
+                    <strong>Collectif Citoyens en Mouvement à Plescop,</strong><br><br>
+                    Dans le cadre de la constitution de notre liste municipale, nous organisons un vote interne afin de déterminer l'ordre des colistières, des colistiers et les représentants à l'agglomération (GMVA).
+                </p>
+                <p class="text-slate-500 text-sm italic border-l-4 border-indigo-100 pl-3 py-1">
+                    Ce vote s’inscrit dans notre démarche de transparence, d’équité et de gouvernance collective.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm space-y-5">
+                <h3 class="text-lg font-bold text-indigo-700 border-b pb-2 mb-2">Modalités du vote</h3>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 bg-pink-100 text-pink-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">1</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Classement Femmes</h4>
+                        <p class="text-sm text-slate-600">Classez les candidates par ordre de priorité (Haut = Prioritaire).</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 bg-blue-100 text-blue-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">2</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Classement Hommes</h4>
+                        <p class="text-sm text-slate-600">Classez les candidats selon le même principe.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 bg-green-100 text-green-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">3</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Choix GMVA</h4>
+                        <p class="text-sm text-slate-600">Sélectionnez obligatoirement <strong>3 femmes</strong> et <strong>3 hommes</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 p-5 rounded-xl border border-indigo-100 text-sm text-indigo-900">
+                <h3 class="font-bold mb-2 flex items-center">🔐 Confidentialité</h3>
+                <ul class="list-disc list-inside space-y-1 ml-1">
+                    <li>Une seule réponse par personne.</li>
+                    <li>Vote nominatif (contrôle) mais <strong>choix secrets</strong>.</li>
+                    <li>Résultats : Mercredi 18 février à 18h30.</li>
+                </ul>
+            </div>
+            
+            <div class="text-center text-xs text-slate-400 uppercase tracking-widest font-semibold">
+                Date limite : Mercredi 18 février - 12h00
+            </div>
+
+            <button id="startBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg text-lg transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                <span>COMMENCER LE VOTE</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+            </button>
+        </div>
+
+
+        <form id="voteForm" class="hidden space-y-8 fade-in">
+
+            <section class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                <h3 class="text-lg font-bold mb-4 flex items-center text-slate-800">
+                    <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">0</span>
+                    Votre Identité
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nom</label>
+                        <input type="text" name="nom" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none uppercase font-semibold" placeholder="VOTRE NOM">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Prénom</label>
+                        <input type="text" name="prenom" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none capitalize font-semibold" placeholder="Votre Prénom">
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="sticky top-16 bg-white z-10 py-2 border-b mb-4">
+                    <h3 class="text-lg font-bold flex items-center text-slate-800">
+                        <span class="bg-pink-100 text-pink-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">1</span>
+                        Classement Femmes
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Glissez les noms vers le haut pour donner des points.</p>
+                </div>
+                
+                <ul id="listFemmes" class="space-y-2 pb-2"></ul>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow-sm">
+                <div class="sticky top-16 bg-white z-10 py-2 border-b mb-4">
+                    <h3 class="text-lg font-bold flex items-center text-slate-800">
+                        <span class="bg-blue-100 text-blue-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">2</span>
+                        Classement Hommes
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Glissez les noms vers le haut pour donner des points.</p>
+                </div>
+                
+                <ul id="listHommes" class="space-y-2 pb-2"></ul>
+            </section>
+
+            <section class="bg-white p-6 rounded-xl shadow-sm">
+                <h3 class="text-lg font-bold mb-4 flex items-center text-slate-800">
+                    <span class="bg-green-100 text-green-700 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">3</span>
+                    Représentation GMVA
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-pink-50 rounded-lg p-4 border border-pink-100">
+                        <h4 class="font-bold text-pink-800 mb-2 flex justify-between">
+                            Femmes
+                            <span class="bg-white px-2 py-0.5 rounded text-sm border border-pink-200"><span id="countFemmesGMVA">0</span>/3</span>
+                        </h4>
+                        <div id="gmvaFemmes" class="space-y-0 divide-y divide-pink-200/50"></div>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                        <h4 class="font-bold text-blue-800 mb-2 flex justify-between">
+                            Hommes
+                            <span class="bg-white px-2 py-0.5 rounded text-sm border border-blue-200"><span id="countHommesGMVA">0</span>/3</span>
+                        </h4>
+                        <div id="gmvaHommes" class="space-y-0 divide-y divide-blue-200/50"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="pt-6 pb-10">
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-xl text-lg transition-all transform active:scale-95 flex justify-center items-center">
+                    <span>Valider mon vote définitivement</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        // VOTRE URL GOOGLE APPS SCRIPT
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3wu5EuEs0kWXaSSBN_1zlOjpEGWDTv7DLlj-jbOIOIb2RSb_F0lSY2DbnhpPVpcMb/exec';
+
+        // LISTES OFFICIELLES (Extraites des images)
+        const candidatesFemmes = [
+            "CATTANT Catherine", "CARO Marie", "DANET Nathalie", "DELION Evelyne",
+            "GIRARD Nathalie", "HAUET Sophie", "HOUDOU Dominique", "LE BODEC Karen",
+            "LE BODO Christine", "LE FEURMOU Marylise", "LUMINEAU Irène", "PAVOISNE Virginie",
+            "PECCABIN Claudine", "PICHET Martine", "REBEYRE Stéphanie", "RIO Virginie"
+        ];
+
+        const candidatesHommes = [
+            "ALIX Patrick", "BUSSON Philippe", "CADORET Lionel", "COMMUN Jérôme",
+            "DANET Douglas", "GENETTE Théo", "GUILLAS André", "KERRAND Fabrice",
+            "LE BIHAN Cédrick", "LE BODEC Gwenn", "LE BODO Laurent", "LE SAYEC Michel",
+            "RENAY Noah", "STEPHANT Yannick", "VANDAELE Jacques-Henri"
+        ];
+
+        // --- 2. NAVIGATION ---
+        document.getElementById('startBtn').addEventListener('click', function() {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('voteForm').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // --- 3. GÉNÉRATION DE L'INTERFACE ---
+        
+        // Création des éléments glissables
+        function createListItems(listId, candidates, colorClass, badgeColor) {
+            const list = document.getElementById(listId);
+            candidates.forEach((name, index) => {
+                const li = document.createElement('li');
+                li.className = `draggable-item bg-white border border-slate-200 p-3 rounded-lg flex items-center justify-between shadow-sm select-none group`;
+                li.setAttribute('data-name', name);
+                li.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="rank-badge font-mono text-sm font-bold ${badgeColor} text-white px-2 py-1 rounded shadow-sm text-center w-8 group-hover:scale-110"></span>
+                        <span class="font-semibold text-slate-700">${name}</span>
+                    </div>
+                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // Création des checkboxes GMVA
+        function createCheckboxItems(containerId, candidates, type) {
+            const container = document.getElementById(containerId);
+            candidates.forEach(name => {
+                const div = document.createElement('div');
+                div.className = "flex items-center p-2 hover:bg-white/50 cursor-pointer transition-colors";
+                div.innerHTML = `
+                    <div class="relative flex items-center">
+                        <input type="checkbox" name="gmva_${type}" value="${name}" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-slate-300 checked:bg-indigo-600 checked:border-transparent focus:ring-2 focus:ring-indigo-500">
+                        <svg class="absolute w-3.5 h-3.5 pointer-events-none hidden peer-checked:block text-white left-0.5 top-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <label class="text-sm font-medium text-slate-700 cursor-pointer ml-3 select-none flex-1">${name}</label>
+                `;
+                // Click sur toute la ligne active la checkbox
+                div.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const cb = div.querySelector('input');
+                        cb.checked = !cb.checked;
+                        cb.dispatchEvent(new Event('change')); // Déclenche l'event change manuellement
+                    }
+                });
+                container.appendChild(div);
+            });
+        }
+
+        // Initialisation
+        createListItems('listFemmes', candidatesFemmes, 'text-pink-600', 'bg-pink-500');
+        createListItems('listHommes', candidatesHommes, 'text-blue-600', 'bg-blue-500');
+        createCheckboxItems('gmvaFemmes', candidatesFemmes, 'F');
+        createCheckboxItems('gmvaHommes', candidatesHommes, 'H');
+
+        // --- 4. LOGIQUE DRAG & DROP ---
+        function updateRanks(listId) {
+            const list = document.getElementById(listId);
+            Array.from(list.children).forEach((li, index) => {
+                // index + 1 = le rang (1er, 2eme, etc.)
+                li.querySelector('.rank-badge').textContent = index + 1;
+                // Visuel : le 1er est plus mis en avant
+                if(index === 0) {
+                   li.classList.add('border-indigo-300', 'ring-1', 'ring-indigo-200');
+                } else {
+                   li.classList.remove('border-indigo-300', 'ring-1', 'ring-indigo-200');
+                }
+            });
+        }
+
+        const sortableOptions = {
+            animation: 200,
+            ghostClass: 'sortable-ghost',
+            delay: 100, // Petit délai pour éviter le drag accidentel au scroll sur mobile
+            delayOnTouchOnly: true,
+            onSort: function (evt) {
+                updateRanks(evt.to.id);
+            }
+        };
+
+        new Sortable(document.getElementById('listFemmes'), sortableOptions);
+        new Sortable(document.getElementById('listHommes'), sortableOptions);
+        
+        // Mise à jour initiale
+        updateRanks('listFemmes');
+        updateRanks('listHommes');
+
+        // --- 5. LIMITATION GMVA (Max 3) ---
+        function handleGMVALimit(selector, countId) {
+            const checkboxes = document.querySelectorAll(selector);
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const checked = document.querySelectorAll(`${selector}:checked`);
+                    const countSpan = document.getElementById(countId);
+                    countSpan.textContent = checked.length;
+                    
+                    // Style conditionnel du compteur
+                    if(checked.length === 3) {
+                        countSpan.parentElement.classList.add('bg-green-100', 'text-green-700', 'border-green-300');
+                    } else {
+                        countSpan.parentElement.classList.remove('bg-green-100', 'text-green-700', 'border-green-300');
+                    }
+
+                    if (checked.length > 3) {
+                        cb.checked = false;
+                        alert("⚠️ Maximum 3 personnes autorisées.");
+                        countSpan.textContent = 3;
+                    }
+                });
+            });
+        }
+        handleGMVALimit('input[name="gmva_F"]', 'countFemmesGMVA');
+        handleGMVALimit('input[name="gmva_H"]', 'countHommesGMVA');
+
+        // --- 6. SOUMISSION DU FORMULAIRE ---
+        document.getElementById('voteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            
+            // Validation GMVA stricte
+            const gmvaF = document.querySelectorAll('input[name="gmva_F"]:checked');
+            const gmvaH = document.querySelectorAll('input[name="gmva_H"]:checked');
+            
+            if (gmvaF.length !== 3 || gmvaH.length !== 3) {
+                alert("⛔ ERREUR : Vous devez sélectionner exactement :\n- 3 Femmes pour GMVA\n- 3 Hommes pour GMVA");
+                // Scroll vers la section GMVA
+                document.getElementById('gmvaFemmes').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            // Animation chargement
+            btn.disabled = true;
+            btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            btn.classList.add('bg-slate-400', 'cursor-not-allowed');
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Envoi sécurisé en cours...`;
+
+            // Préparation des données
+            const orderFemmes = Array.from(document.getElementById('listFemmes').children).map(li => li.getAttribute('data-name')).join(' | ');
+            const orderHommes = Array.from(document.getElementById('listHommes').children).map(li => li.getAttribute('data-name')).join(' | ');
+            const listGMVA = [...Array.from(gmvaF).map(c => c.value), ...Array.from(gmvaH).map(c => c.value)].join(' | ');
+
+            const formData = new FormData(this);
+            const urlParams = new URLSearchParams();
+            urlParams.append('nom', formData.get('nom'));
+            urlParams.append('prenom', formData.get('prenom'));
+            urlParams.append('voteFemmes', orderFemmes);
+            urlParams.append('voteHommes', orderHommes);
+            urlParams.append('voteGMVA', listGMVA);
+
+            // Envoi
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: urlParams
+            })
+            .then(response => {
+                // Affichage page Succès
+                document.body.innerHTML = `
+                    <div class="flex flex-col items-center justify-center min-h-screen bg-green-50 text-center p-6 fade-in">
+                        <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-green-100">
+                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="text-4xl">✅</span>
+                            </div>
+                            <h2 class="text-2xl font-bold text-green-800 mb-2">Vote Enregistré !</h2>
+                            <p class="text-slate-600 mb-6">Merci <strong>${formData.get('prenom')}</strong>.<br>Votre participation a bien été transmise de façon sécurisée.</p>
+                            <div class="text-xs text-slate-400 pt-4 border-t border-slate-100">
+                                Rendez-vous le 18 février pour les résultats.
+                            </div>
+                        </div>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                console.error(error);
+                alert("❌ Erreur de connexion. Vérifiez votre internet et réessayez.");
+                btn.disabled = false;
+                btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                btn.classList.remove('bg-slate-400', 'cursor-not-allowed');
+                btn.innerHTML = "Valider mon vote";
+            });
+        });
+    </script>
+</body>
+</html>
