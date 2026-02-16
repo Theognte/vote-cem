@@ -432,6 +432,9 @@
 
             const formData = new FormData(this);
             const urlParams = new URLSearchParams();
+
+            urlParams.append('action', 'vote');
+
             urlParams.append('nom', formData.get('nom'));
             urlParams.append('prenom', formData.get('prenom'));
             urlParams.append('voteFemmes', orderFemmes);

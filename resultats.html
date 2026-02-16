@@ -153,6 +153,7 @@
             document.getElementById('loginArea').classList.add('hidden');
 
             const formData = new FormData();
+            formData.append('action', 'read');
             formData.append('password', pwd);
 
             fetch(SCRIPT_URL, {
